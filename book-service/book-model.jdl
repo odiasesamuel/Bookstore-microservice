@@ -1,0 +1,11 @@
+entity Book {
+  title String required,
+  author String required,
+  isbn String required minlength(10) maxlength(13),
+  price BigDecimal required,
+  publishedDate Instant,
+  availableCopies Integer required
+}
+
+service Book with serviceClass
+paginate Book with pagination

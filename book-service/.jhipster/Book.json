@@ -1,0 +1,47 @@
+{
+  "annotations": {
+    "changelogDate": "20250723114416"
+  },
+  "applications": "*",
+  "clientRootFolder": "bookService",
+  "databaseType": "sql",
+  "fields": [
+    {
+      "fieldName": "title",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "author",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "isbn",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "13",
+      "fieldValidateRulesMinlength": "10"
+    },
+    {
+      "fieldName": "price",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "publishedDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "availableCopies",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "microserviceName": "bookService",
+  "name": "Book",
+  "pagination": "pagination",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}
