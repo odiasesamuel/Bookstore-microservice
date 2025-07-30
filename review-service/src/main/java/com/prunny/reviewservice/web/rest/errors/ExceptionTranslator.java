@@ -2,6 +2,11 @@ package com.prunny.reviewservice.web.rest.errors;
 
 import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.prunny.reviewservice.service.dto.ApiResponse;
+import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Arrays;
@@ -49,6 +54,7 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     private static final String MESSAGE_KEY = "message";
     private static final String PATH_KEY = "path";
     private static final boolean CASUAL_CHAIN_ENABLED = false;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final Logger LOG = LoggerFactory.getLogger(ExceptionTranslator.class);
 
@@ -59,6 +65,27 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
 
     public ExceptionTranslator(Environment env) {
         this.env = env;
+    }
+
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<ApiResponse> handleFeignException(FeignException ex) {
+        String message = "Remote service error";
+
+        try {
+            if (ex.content() != null) {
+                JsonNode root = objectMapper.readTree(ex.contentUTF8());
+
+                message = root.path("detail").asText();
+                if (message == null || message.isBlank()) {
+                    message = root.path("message").asText("Remote service error");
+                }
+            }
+        } catch (Exception e) {
+            message = "Error parsing remote service response";
+        }
+
+        ApiResponse apiResponse = new ApiResponse(message, null);
+        return ResponseEntity.status(ex.status()).body(apiResponse);
     }
 
     @ExceptionHandler

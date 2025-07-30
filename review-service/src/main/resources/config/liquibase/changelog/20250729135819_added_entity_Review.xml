@@ -14,7 +14,7 @@
             <column name="id" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="book_id" type="bigint">
+            <column name="book_isbn" type="varchar(13)">
                 <constraints nullable="false" />
             </column>
             <column name="rating" type="integer">
@@ -48,7 +48,7 @@
                   tableName="review"
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
-            <column name="book_id" type="numeric"/>
+            <column name="book_isbn" type="string"/>
             <column name="rating" type="numeric"/>
             <column name="comment" type="string"/>
             <column name="review_date" type="date"/>

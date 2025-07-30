@@ -22,8 +22,9 @@ public class Review implements Serializable {
     private Long id;
 
     @NotNull
-    @Column(name = "book_id", nullable = false)
-    private Long bookId;
+    @Size(min = 10, max = 13)
+    @Column(name = "book_isbn", length = 13, nullable = false)
+    private String bookIsbn;
 
     @NotNull
     @Min(value = 1)
@@ -53,17 +54,17 @@ public class Review implements Serializable {
         this.id = id;
     }
 
-    public Long getBookId() {
-        return this.bookId;
+    public String getBookIsbn() {
+        return this.bookIsbn;
     }
 
-    public Review bookId(Long bookId) {
-        this.setBookId(bookId);
+    public Review bookIsbn(String bookIsbn) {
+        this.setBookIsbn(bookIsbn);
         return this;
     }
 
-    public void setBookId(Long bookId) {
-        this.bookId = bookId;
+    public void setBookIsbn(String bookIsbn) {
+        this.bookIsbn = bookIsbn;
     }
 
     public Integer getRating() {
@@ -129,7 +130,7 @@ public class Review implements Serializable {
     public String toString() {
         return "Review{" +
             "id=" + getId() +
-            ", bookId=" + getBookId() +
+            ", bookIsbn='" + getBookIsbn() + "'" +
             ", rating=" + getRating() +
             ", comment='" + getComment() + "'" +
             ", reviewDate='" + getReviewDate() + "'" +

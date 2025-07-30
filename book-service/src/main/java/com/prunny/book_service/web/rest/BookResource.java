@@ -161,7 +161,7 @@ public class BookResource {
     }
 
     /**
-     * {@code GET  /books/:isbn} : get the "isbn" book.
+     * {@code GET  /books/isbn/:isbn} : get the "isbn" book.
      *
      * @param isbn the isbn of the book to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the book, or with status {@code 404 (Not Found)}.

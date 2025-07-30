@@ -47,7 +47,7 @@ public class ReviewAsserts {
     public static void assertReviewUpdatableFieldsEquals(Review expected, Review actual) {
         assertThat(actual)
             .as("Verify Review relevant properties")
-            .satisfies(a -> assertThat(a.getBookId()).as("check bookId").isEqualTo(expected.getBookId()))
+            .satisfies(a -> assertThat(a.getBookIsbn()).as("check bookIsbn").isEqualTo(expected.getBookIsbn()))
             .satisfies(a -> assertThat(a.getRating()).as("check rating").isEqualTo(expected.getRating()))
             .satisfies(a -> assertThat(a.getComment()).as("check comment").isEqualTo(expected.getComment()))
             .satisfies(a -> assertThat(a.getReviewDate()).as("check reviewDate").isEqualTo(expected.getReviewDate()));

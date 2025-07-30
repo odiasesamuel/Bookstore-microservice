@@ -3,7 +3,6 @@ package com.prunny.reviewservice.service;
 import com.prunny.reviewservice.client.BookServiceClient;
 import com.prunny.reviewservice.domain.Review;
 import com.prunny.reviewservice.repository.ReviewRepository;
-import com.prunny.reviewservice.security.SecurityUtils;
 import com.prunny.reviewservice.service.dto.BookDTO;
 import com.prunny.reviewservice.service.dto.ReviewDTO;
 import com.prunny.reviewservice.service.mapper.ReviewMapper;
@@ -28,7 +27,7 @@ public class ReviewService {
 
     private final ReviewMapper reviewMapper;
 
-    private final BookServiceClient bookServiceClient;
+    private BookServiceClient bookServiceClient;
 
     public ReviewService(ReviewRepository reviewRepository, ReviewMapper reviewMapper, BookServiceClient bookServiceClient) {
         this.reviewRepository = reviewRepository;
@@ -44,7 +43,7 @@ public class ReviewService {
      */
     public ReviewDTO save(ReviewDTO reviewDTO) {
         LOG.debug("Request to save Review : {}", reviewDTO);
-        BookDTO bookDTO = bookServiceClient.getBookById(reviewDTO.getBookId());
+        BookDTO bookDTO = bookServiceClient.getBookByIsbn(reviewDTO.getBookIsbn());
         System.out.println("Book Details " + bookDTO);
         Review review = reviewMapper.toEntity(reviewDTO);
         review = reviewRepository.save(review);

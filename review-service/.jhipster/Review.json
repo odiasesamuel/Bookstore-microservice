@@ -8,9 +8,11 @@
   "dto": "mapstruct",
   "fields": [
     {
-      "fieldName": "bookId",
-      "fieldType": "Long",
-      "fieldValidateRules": ["required"]
+      "fieldName": "bookIsbn",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "13",
+      "fieldValidateRulesMinlength": "10"
     },
     {
       "fieldName": "rating",

@@ -36,8 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockUser
 class ReviewResourceIT {
 
-    private static final Long DEFAULT_BOOK_ID = 1L;
-    private static final Long UPDATED_BOOK_ID = 2L;
+    private static final String DEFAULT_BOOK_ISBN = "AAAAAAAAAA";
+    private static final String UPDATED_BOOK_ISBN = "BBBBBBBBBB";
 
     private static final Integer DEFAULT_RATING = 1;
     private static final Integer UPDATED_RATING = 2;
@@ -80,7 +80,7 @@ class ReviewResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Review createEntity() {
-        return new Review().bookId(DEFAULT_BOOK_ID).rating(DEFAULT_RATING).comment(DEFAULT_COMMENT).reviewDate(DEFAULT_REVIEW_DATE);
+        return new Review().bookIsbn(DEFAULT_BOOK_ISBN).rating(DEFAULT_RATING).comment(DEFAULT_COMMENT).reviewDate(DEFAULT_REVIEW_DATE);
     }
 
     /**
@@ -90,7 +90,7 @@ class ReviewResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Review createUpdatedEntity() {
-        return new Review().bookId(UPDATED_BOOK_ID).rating(UPDATED_RATING).comment(UPDATED_COMMENT).reviewDate(UPDATED_REVIEW_DATE);
+        return new Review().bookIsbn(UPDATED_BOOK_ISBN).rating(UPDATED_RATING).comment(UPDATED_COMMENT).reviewDate(UPDATED_REVIEW_DATE);
     }
 
     @BeforeEach
@@ -150,10 +150,10 @@ class ReviewResourceIT {
 
     @Test
     @Transactional
-    void checkBookIdIsRequired() throws Exception {
+    void checkBookIsbnIsRequired() throws Exception {
         long databaseSizeBeforeTest = getRepositoryCount();
         // set the field null
-        review.setBookId(null);
+        review.setBookIsbn(null);
 
         // Create the Review, which fails.
         ReviewDTO reviewDTO = reviewMapper.toDto(review);
@@ -211,7 +211,7 @@ class ReviewResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(review.getId().intValue())))
-            .andExpect(jsonPath("$.[*].bookId").value(hasItem(DEFAULT_BOOK_ID.intValue())))
+            .andExpect(jsonPath("$.[*].bookIsbn").value(hasItem(DEFAULT_BOOK_ISBN)))
             .andExpect(jsonPath("$.[*].rating").value(hasItem(DEFAULT_RATING)))
             .andExpect(jsonPath("$.[*].comment").value(hasItem(DEFAULT_COMMENT)))
             .andExpect(jsonPath("$.[*].reviewDate").value(hasItem(DEFAULT_REVIEW_DATE.toString())));
@@ -229,7 +229,7 @@ class ReviewResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(review.getId().intValue()))
-            .andExpect(jsonPath("$.bookId").value(DEFAULT_BOOK_ID.intValue()))
+            .andExpect(jsonPath("$.bookIsbn").value(DEFAULT_BOOK_ISBN))
             .andExpect(jsonPath("$.rating").value(DEFAULT_RATING))
             .andExpect(jsonPath("$.comment").value(DEFAULT_COMMENT))
             .andExpect(jsonPath("$.reviewDate").value(DEFAULT_REVIEW_DATE.toString()));
@@ -254,7 +254,7 @@ class ReviewResourceIT {
         Review updatedReview = reviewRepository.findById(review.getId()).orElseThrow();
         // Disconnect from session so that the updates on updatedReview are not directly saved in db
         em.detach(updatedReview);
-        updatedReview.bookId(UPDATED_BOOK_ID).rating(UPDATED_RATING).comment(UPDATED_COMMENT).reviewDate(UPDATED_REVIEW_DATE);
+        updatedReview.bookIsbn(UPDATED_BOOK_ISBN).rating(UPDATED_RATING).comment(UPDATED_COMMENT).reviewDate(UPDATED_REVIEW_DATE);
         ReviewDTO reviewDTO = reviewMapper.toDto(updatedReview);
 
         restReviewMockMvc
@@ -368,7 +368,7 @@ class ReviewResourceIT {
         Review partialUpdatedReview = new Review();
         partialUpdatedReview.setId(review.getId());
 
-        partialUpdatedReview.bookId(UPDATED_BOOK_ID).rating(UPDATED_RATING).comment(UPDATED_COMMENT).reviewDate(UPDATED_REVIEW_DATE);
+        partialUpdatedReview.bookIsbn(UPDATED_BOOK_ISBN).rating(UPDATED_RATING).comment(UPDATED_COMMENT).reviewDate(UPDATED_REVIEW_DATE);
 
         restReviewMockMvc
             .perform(

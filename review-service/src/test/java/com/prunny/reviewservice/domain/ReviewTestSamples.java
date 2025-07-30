@@ -12,17 +12,17 @@ public class ReviewTestSamples {
     private static final AtomicInteger intCount = new AtomicInteger(random.nextInt() + (2 * Short.MAX_VALUE));
 
     public static Review getReviewSample1() {
-        return new Review().id(1L).bookId(1L).rating(1).comment("comment1");
+        return new Review().id(1L).bookIsbn("bookIsbn1").rating(1).comment("comment1");
     }
 
     public static Review getReviewSample2() {
-        return new Review().id(2L).bookId(2L).rating(2).comment("comment2");
+        return new Review().id(2L).bookIsbn("bookIsbn2").rating(2).comment("comment2");
     }
 
     public static Review getReviewRandomSampleGenerator() {
         return new Review()
             .id(longCount.incrementAndGet())
-            .bookId(longCount.incrementAndGet())
+            .bookIsbn(UUID.randomUUID().toString())
             .rating(intCount.incrementAndGet())
             .comment(UUID.randomUUID().toString());
     }

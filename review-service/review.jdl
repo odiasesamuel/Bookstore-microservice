@@ -1,5 +1,5 @@
 entity Review {
-  bookId Long required,
+  bookIsbn String required minlength(10) maxlength(13),
   rating Integer required min(1) max(5),
   comment String,
   reviewDate Instant required

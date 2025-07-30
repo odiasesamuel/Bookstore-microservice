@@ -14,7 +14,8 @@ public class ReviewDTO implements Serializable {
     private Long id;
 
     @NotNull
-    private Long bookId;
+    @Size(min = 10, max = 13)
+    private String bookIsbn;
 
     @NotNull
     @Min(value = 1)
@@ -34,12 +35,12 @@ public class ReviewDTO implements Serializable {
         this.id = id;
     }
 
-    public Long getBookId() {
-        return bookId;
+    public String getBookIsbn() {
+        return bookIsbn;
     }
 
-    public void setBookId(Long bookId) {
-        this.bookId = bookId;
+    public void setBookIsbn(String bookIsbn) {
+        this.bookIsbn = bookIsbn;
     }
 
     public Integer getRating() {
@@ -92,7 +93,7 @@ public class ReviewDTO implements Serializable {
     public String toString() {
         return "ReviewDTO{" +
             "id=" + getId() +
-            ", bookId=" + getBookId() +
+            ", bookIsbn='" + getBookIsbn() + "'" +
             ", rating=" + getRating() +
             ", comment='" + getComment() + "'" +
             ", reviewDate='" + getReviewDate() + "'" +
