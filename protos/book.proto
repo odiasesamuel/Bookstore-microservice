@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "book";
+
+package book;
+
+service BookService {
+  rpc ReduceAvailableCopies (ReduceAvailableCopiesRequest) returns (ReduceAvailableCopiesResponse);
+}
+
+message ReduceAvailableCopiesRequest {
+  string bookIsbn = 1;
+  int32 quantity = 2;
+}
+
+message ReduceAvailableCopiesResponse {
+  bool success = 1;
+  string message = 2;
+}

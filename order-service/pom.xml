@@ -3,12 +3,12 @@
                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.prunny.book_service</groupId>
-    <artifactId>book-service</artifactId>
+    <groupId>com.prunny.order_service</groupId>
+    <artifactId>order-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>Book Service</name>
-    <description>Description for Book Service</description>
+    <name>Order Service</name>
+    <description>Description for Order Service</description>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -29,7 +29,7 @@
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <start-class>com.prunny.book_service.BookServiceApp</start-class>
+        <start-class>com.prunny.order_service.OrderServiceApp</start-class>
         <argLine>-Djava.security.egd=file:/dev/./urandom -Xmx1G</argLine>
         <m2e.apt.activation>jdt_apt</m2e.apt.activation>
         <run.addResources>false</run.addResources>
@@ -279,7 +279,11 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
-      <dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.retry</groupId>
             <artifactId>spring-retry</artifactId>
         </dependency>
@@ -303,40 +307,6 @@
             <artifactId>testcontainers</artifactId>
             <scope>test</scope>
         </dependency>
-
-      <!--GRPC -->
-      <dependency>
-        <groupId>io.grpc</groupId>
-        <artifactId>grpc-netty-shaded</artifactId>
-        <version>1.69.0</version>
-      </dependency>
-      <dependency>
-        <groupId>io.grpc</groupId>
-        <artifactId>grpc-protobuf</artifactId>
-        <version>1.69.0</version>
-      </dependency>
-      <dependency>
-        <groupId>io.grpc</groupId>
-        <artifactId>grpc-stub</artifactId>
-        <version>1.69.0</version>
-      </dependency>
-      <dependency> <!-- necessary for Java 9+ -->
-        <groupId>org.apache.tomcat</groupId>
-        <artifactId>annotations-api</artifactId>
-        <version>6.0.53</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>net.devh</groupId>
-        <artifactId>grpc-spring-boot-starter</artifactId>
-        <version>3.1.0.RELEASE</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.protobuf</groupId>
-        <artifactId>protobuf-java</artifactId>
-        <version>4.29.1</version>
-      </dependency>
-
     </dependencies>
 
     <build>
@@ -686,7 +656,7 @@
                             </platforms>
                         </from>
                         <to>
-                            <image>bookservice:latest</image>
+                            <image>orderservice:latest</image>
                         </to>
                         <container>
                             <entrypoint>
@@ -695,7 +665,7 @@
                                 <arg>/entrypoint.sh</arg>
                             </entrypoint>
                             <ports>
-                                <port>8080</port>
+                                <port>8082</port>
                             </ports>
                             <environment>
                                 <SPRING_OUTPUT_ANSI_ENABLED>ALWAYS</SPRING_OUTPUT_ANSI_ENABLED>
@@ -831,7 +801,7 @@
                         <defaultSchemaName/>
                         <username>${liquibase-plugin.username}</username>
                         <password>${liquibase-plugin.password}</password>
-                        <referenceUrl>hibernate:spring:com.prunny.book_service.domain?dialect=org.hibernate.dialect.PostgreSQLDialect&amp;hibernate.physical_naming_strategy=org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy&amp;hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy</referenceUrl>
+                        <referenceUrl>hibernate:spring:com.prunny.order_service.domain?dialect=org.hibernate.dialect.PostgreSQLDialect&amp;hibernate.physical_naming_strategy=org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy&amp;hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy</referenceUrl>
                         <verbose>true</verbose>
                         <logging>debug</logging>
                         <contexts>!test</contexts>
@@ -883,8 +853,8 @@
             <properties>
                 <!-- default Spring profiles -->
                 <liquibase-plugin.password/>
-                <liquibase-plugin.url>jdbc:postgresql://localhost:5432/bookService</liquibase-plugin.url>
-                <liquibase-plugin.username>bookService</liquibase-plugin.username>
+                <liquibase-plugin.url>jdbc:postgresql://localhost:5432/orderService</liquibase-plugin.url>
+                <liquibase-plugin.username>orderService</liquibase-plugin.username>
                 <profile.test>test,testdev</profile.test>
                 <spring.profiles.active>dev${profile.tls}${profile.no-liquibase}</spring.profiles.active>
             </properties>
@@ -990,8 +960,8 @@
             <properties>
                 <!-- default Spring profiles -->
                 <liquibase-plugin.password/>
-                <liquibase-plugin.url>jdbc:postgresql://localhost:5432/bookService</liquibase-plugin.url>
-                <liquibase-plugin.username>bookService</liquibase-plugin.username>
+                <liquibase-plugin.url>jdbc:postgresql://localhost:5432/orderService</liquibase-plugin.url>
+                <liquibase-plugin.username>orderService</liquibase-plugin.username>
                 <profile.test>test,testprod</profile.test>
                 <spring.profiles.active>prod${profile.api-docs}${profile.tls}${profile.e2e}${profile.no-liquibase}</spring.profiles.active>
             </properties>

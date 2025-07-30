@@ -1,0 +1,38 @@
+{
+  "annotations": {
+    "changelogDate": "20250730115329"
+  },
+  "applications": "*",
+  "clientRootFolder": "orderService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "entityTableName": "jhi_order",
+  "fields": [
+    {
+      "fieldName": "userId",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "bookIsbn",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "quantity",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "totalAmount",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "microserviceName": "orderService",
+  "name": "Order",
+  "pagination": "pagination",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

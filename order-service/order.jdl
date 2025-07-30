@@ -1,0 +1,10 @@
+entity Order {
+  userId String required,
+  bookIsbn String required,
+  quantity Integer required,
+  totalAmount BigDecimal required,
+}
+
+dto Order with mapstruct
+service Order with serviceClass
+paginate Order with pagination
