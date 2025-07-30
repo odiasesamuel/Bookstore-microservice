@@ -1,0 +1,10 @@
+entity Review {
+  bookId Long required,
+  rating Integer required min(1) max(5),
+  comment String,
+  reviewDate Instant required
+}
+
+dto Review with mapstruct
+service Review with serviceClass
+paginate Review with pagination

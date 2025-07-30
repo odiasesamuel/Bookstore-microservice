@@ -161,6 +161,19 @@ public class BookResource {
     }
 
     /**
+     * {@code GET  /books/:isbn} : get the "isbn" book.
+     *
+     * @param isbn the isbn of the book to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the book, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/isbn/{isbn}")
+    public ResponseEntity<Book> getBookByIsbn(@PathVariable("isbn") String isbn) {
+        LOG.debug("REST request to get Book : {}", isbn);
+        Optional<Book> book = bookService.findOneByIsbn(isbn);
+        return ResponseUtil.wrapOrNotFound(book);
+    }
+
+    /**
      * {@code DELETE  /books/:id} : delete the "id" book.
      *
      * @param id the id of the book to delete.

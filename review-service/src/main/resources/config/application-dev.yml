@@ -18,7 +18,7 @@ logging:
     ROOT: DEBUG
     tech.jhipster: DEBUG
     org.hibernate.SQL: DEBUG
-    com.prunny.bookstore: DEBUG
+    com.prunny.reviewservice: DEBUG
 
 eureka:
   instance:
@@ -55,7 +55,7 @@ spring:
       # it can be set to any label, branch or commit of the configuration source Git repository
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://localhost:5432/reviewService
+    url: jdbc:postgresql://localhost:5438/reviewService
     username: reviewService
     password:
     hikari:
@@ -96,7 +96,7 @@ jhipster:
     authentication:
       jwt:
         # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
-        base64-secret: MWJiMTk2NDdhNzA2NzcxOGJlZmQ2MzRjNGY4N2Y4NDc3YzZkZGVlNDkwZDJhZGYzYzRiN2JhNzVlMzE3NTVkYTI5YmIyYTYyMDZlYzY4ZGZjMjM1ZWM0MDc4MGY1MjU2MmEyYzNkMGY4OGE5MTkzYjNiYjliOGVjM2ExOGMyZmE=
+        base64-secret: OTc0MzQ3YjIxODZhZTBlODc1M2U1ODg0MTA3NzA1YWNkYWEwNzhhOWRmM2NmMTFjZTIwNTJkMmRlOGZkYWMzY2YxMjU2OWY0NDI3M2QzMTEyZjI1MDIyYjMzYTY3ZTYwOGZhYzE1YTU3NTQ1ZDIwNTY5ZTg3Mzc2ZWRiNDRhN2Y=
         # Token is valid 24 hours
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000

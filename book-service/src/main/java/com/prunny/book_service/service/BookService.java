@@ -108,6 +108,18 @@ public class BookService {
     }
 
     /**
+     * Get one book by isbn.
+     *
+     * @param isbn the isbn of the entity.
+     * @return the entity.
+     */
+    @Transactional(readOnly = true)
+    public Optional<Book> findOneByIsbn(String isbn) {
+        LOG.debug("Request to get Book : {}", isbn);
+        return bookRepository.findByIsbn(isbn);
+    }
+
+    /**
      * Delete the book by id.
      *
      * @param id the id of the entity.
