@@ -1,10 +1,15 @@
 package com.prunny.order_service.service;
 
+import book.ReduceAvailableCopiesResponse;
 import com.prunny.order_service.domain.Order;
+import com.prunny.order_service.grpc.client.BookServiceGrpcClient;
 import com.prunny.order_service.repository.OrderRepository;
 import com.prunny.order_service.service.dto.OrderDTO;
 import com.prunny.order_service.service.mapper.OrderMapper;
 import java.util.Optional;
+
+import com.prunny.order_service.web.rest.errors.InsufficientStockException;
+import com.prunny.order_service.web.rest.errors.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -25,9 +30,12 @@ public class OrderService {
 
     private final OrderMapper orderMapper;
 
-    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper) {
+    private final BookServiceGrpcClient bookServiceGrpcClient;
+
+    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, BookServiceGrpcClient bookServiceGrpcClient) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
+        this.bookServiceGrpcClient = bookServiceGrpcClient;
     }
 
     /**
@@ -40,6 +48,16 @@ public class OrderService {
         LOG.debug("Request to save Order : {}", orderDTO);
         Order order = orderMapper.toEntity(orderDTO);
         order = orderRepository.save(order);
+
+        ReduceAvailableCopiesResponse bookServiceResponse = bookServiceGrpcClient.reduceAvailableCopies(order.getBookIsbn(), order.getQuantity());
+        LOG.info("Received response from book service via GRPC: {}", bookServiceResponse);
+        if (!bookServiceResponse.getSuccess()) {
+            String msg = bookServiceResponse.getMessage().toLowerCase();
+            if (msg.contains("not found")) throw new ResourceNotFoundException(msg);
+            if (msg.contains("not enough stock")) throw new InsufficientStockException(msg);
+            throw new ResourceNotFoundException(bookServiceResponse.getMessage());
+        }
+
         return orderMapper.toDto(order);
     }
 
