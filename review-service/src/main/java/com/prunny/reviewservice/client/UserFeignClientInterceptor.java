@@ -1,10 +1,17 @@
 package com.prunny.reviewservice.client;
 
+import com.prunny.reviewservice.security.SecurityUtils;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -13,6 +20,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class UserFeignClientInterceptor implements RequestInterceptor {
@@ -21,10 +29,19 @@ public class UserFeignClientInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate template) {
-//        SecurityUtils.getCurrentUserJWT().ifPresent(s -> template.header(AUTHORIZATION_HEADER, String.format("%s %s", BEARER, s)));
-        String internalJwt = generateInternalJwt(); // See below
-        System.out.println("JWT SECRET: " + internalJwt);
-        template.header("Authorization", "Bearer " + internalJwt);
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = attrs.getRequest();
+
+
+        Optional<String> currentUserJWT = Optional.ofNullable(request.getHeader("Authorization"));
+        System.out.println(currentUserJWT);
+        currentUserJWT.ifPresent(s -> template.header("Authorization", s));
+
+        System.out.println(currentUserJWT);
+
+//        String internalJwt = generateInternalJwt();
+//        System.out.println("JWT SECRET: " + internalJwt);
+//        template.header("Authorization", "Bearer " + internalJwt);
     }
 
     private String generateInternalJwt() {
