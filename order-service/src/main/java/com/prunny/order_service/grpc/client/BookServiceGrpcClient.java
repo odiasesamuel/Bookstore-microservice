@@ -7,6 +7,8 @@ import book.ReduceAvailableCopiesResponse;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.micrometer.core.instrument.binder.grpc.ObservationGrpcClientInterceptor;
+import io.micrometer.observation.ObservationRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +21,8 @@ public class BookServiceGrpcClient {
 
     public BookServiceGrpcClient(
         @Value("${book.service.address:localhost}") String serverAddress,
-        @Value("${book.service.grpc.port:9090}") int serverPort
+        @Value("${book.service.grpc.port:9090}") int serverPort,
+        ObservationRegistry observationRegistry
     ) {
         log.info("Connecting to Billing Service GRPC service at {}:{}", serverAddress, serverPort);
 
@@ -41,6 +44,7 @@ public class BookServiceGrpcClient {
         ManagedChannel channel = NettyChannelBuilder
             .forAddress(serverAddress, serverPort)
             .usePlaintext()
+            .intercept(new ObservationGrpcClientInterceptor(observationRegistry))
             .build();
 
         blockingStub = BookServiceGrpc.newBlockingStub(channel);
