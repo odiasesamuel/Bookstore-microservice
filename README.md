@@ -1,6 +1,6 @@
 # 📚 Bookstore Microservice System
 
-This is a microservice-based system for managing books and their reviews and orders, built using Spring Boot. It demonstrates robust inter-service communication using both **Feign Clients** (REST) and **gRPC**.
+This is a microservice-based system for managing books and their reviews and orders, built using Spring Boot. It demonstrates robust inter-service communication using both **Feign Clients** (REST) and **gRPC**, with **distributed tracing** implemented via Micrometer and Zipkin for end-to-end observability across all services.
 
 ## 🏗️ Architecture Overview
 
@@ -25,8 +25,7 @@ To enable inter-service communication between Review Service and Book Service, w
 
 When generating your microservice with JHipster, make sure to enable Feign client support:
 
-> **Prompt:**
-> _"Do you want to generate a Feign client?"_
+> **Prompt:** > _"Do you want to generate a Feign client?"_
 > Answer: Yes
 
 This scaffolds the required dependencies and base configuration for Feign in your microservice.
@@ -39,7 +38,7 @@ To achieve this integration in the review service you need to follow the followi
 
 In your review service you need to create a BookServiceClient interface that acts as a proxy for calling the Book Service
 
-```bash
+```java
 ## src/main/java/com/prunny/reviewservice/client/BookServiceClient
 
 @FeignClient(name = "bookservice")
@@ -53,7 +52,7 @@ public interface BookServiceClient {
 
 Since the Book Service is protected by Spring Security, the Review Service must authenticate itself when making requests. To achieve secure inter-service communication, we configure a Feign interceptor to generate and attach a JWT token to each outgoing request.
 
-```bash
+```java
 ## src/main/java/com/prunny/reviewservice/client/UserFeignClientInterceptor.java
 
 @Component
@@ -90,7 +89,7 @@ This approach eliminates the need for user context or SecurityContextHolder, mak
 
 To wire up the Feign client and ensure that all outgoing HTTP requests from the Review Service to the Book Service include the internally generated JWT token, we define a centralized Feign configuration class.
 
-```bash
+```java
 ## src/main/java/com/prunny/reviewservice/config/FeignConfiguration.java
 
 @Configuration
@@ -114,7 +113,7 @@ public class FeignConfiguration {
 
 After configuring the Feign client and interceptor, the next step is to leverage it in your service layer—in this case, inside the ReviewService—to fetch book details from the Book Service before saving a review.
 
-```bash
+```java
 ## src/main/java/com/prunny/reviewservice/service/ReviewService.java
 
 public ReviewDTO save(ReviewDTO reviewDTO) {
@@ -131,7 +130,7 @@ public ReviewDTO save(ReviewDTO reviewDTO) {
 
 When making remote calls using Feign (e.g., to the Book Service), failures such as 404 Not Found, 403 Forbidden, or 500 Internal Server Error can occur. To avoid leaking raw Feign exception details and to provide a clean, user-friendly API response, we handle these errors centrally using a global exception handler.
 
-```bash
+```java
 ## src/main/java/com/prunny/reviewservice/exception/GlobalExceptionHandler.java
 
 @ExceptionHandler(FeignException.class)
@@ -166,7 +165,7 @@ JHipster doesn’t include gRPC support out of the box, but you can manually set
 
 Add the following to the `<dependencies>` section
 
-```bash
+```xml
 ## pom.xl
 
 <!--GRPC -->
@@ -205,7 +204,7 @@ Add the following to the `<dependencies>` section
 
 Add the following to the `<build>` section
 
-```bash
+```xml
 ## pom.xl
 
 <build>
@@ -278,7 +277,7 @@ Add the following to the `<build>` section
 
 We create a `book_service.proto` file that defines the service contract between the Book and Order services.
 
-```bash
+```java
 ## src/main/proto/book_service.proto
 
 syntax = "proto3";
@@ -342,7 +341,7 @@ target/generated-sources/protobuf/
 
 #### 🧩 Step 3: Implement the gRPC Server in Book Service
 
-```bash
+```java
 ## src/main/java/com/prunny/book_service/grpc/server/BookGrpcService.java
 
 @GrpcService
@@ -408,7 +407,7 @@ public class BookGrpcService extends BookServiceGrpc.BookServiceImplBase {
 
 #### 🚀 Step 4: Create the gRPC Client in Order Service
 
-```bash
+```java
 @Service
 public class BookServiceGrpcClient {
     private static final Logger log = LoggerFactory.getLogger(BookServiceGrpcClient.class);
@@ -440,7 +439,7 @@ public class BookServiceGrpcClient {
 
 #### 📡 Step 5: Use gRPC Client in Order Service to validate Book availability
 
-```bash
+```java
 public OrderDTO save(OrderDTO orderDTO) {
         LOG.debug("Request to save Order : {}", orderDTO);
         Order order = orderMapper.toEntity(orderDTO);
@@ -457,6 +456,197 @@ public OrderDTO save(OrderDTO orderDTO) {
 
         return orderMapper.toDto(order);
     }
+```
+
+## 🔍 Distributed Tracing Implementation
+
+This project implements distributed tracing for Feign client and gRPC inter-service calls using Micrometer and Zipkin.
+
+### 🌐 Feign Client Tracing (Review → Book Service)
+
+#### 📦 Maven Configuration
+
+Add the Zipkin profile to your `pom.xml`
+
+```xml
+<profile>
+    <id>zipkin</id>
+    <dependencies>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.zipkin.reporter2</groupId>
+            <artifactId>zipkin-reporter-brave</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-micrometer</artifactId>
+        </dependency>
+    </dependencies>
+</profile>
+```
+
+Spring Boot automatically configures tracing for RestTemplate, WebClient, and RestClient. Feign requires the additional `feign-micrometer` dependency and `spring.cloud.openfeign.micrometer.enabled=enable` properties in the calling service(Review service).
+
+#### ⚙️ Application Configuration
+
+Configure tracing in `application-dev.yml` for the Review Service:
+
+```yml
+spring:
+  cloud:
+    openfeign:
+      micrometer:
+        enabled: true
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+
+management:
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1.0
+```
+
+The sampling probability is set to 1.0 to report 100% of traces during development. Adjust this value for production environments based on your traffic volume.
+
+#### 👁️ Observability Configuration
+
+Create an `ObservabilityConfiguration` class to disable Spring Security observation spans:
+
+```java
+@Configuration
+public class ObservabilityConfiguration {
+    @Bean
+    SecurityObservationSettings noSpringSecurityObservations() {
+        return SecurityObservationSettings.noObservations();
+    }
+}
+```
+
+This configuration removes Spring Security filter chain spans from Zipkin traces while preserving HTTP server and Feign client spans. Security-related metrics remain available through Micrometer.
+
+> **Note:** You can still keep track of security-related metrics via Micrometer. Because those security spans are often the fastest way to spot “why is my gateway slow?” (JWT parsing, auth manager, filter ordering, etc.)
+
+#### 🧪 Testing the Implementation
+
+Start your services and navigate to the Zipkin UI at `http://localhost:9411`. Make a few requests through your application to generate trace data.
+
+In the Zipkin UI, click "Run Query" to view recent traces. You should see a complete trace showing the request flow across all services with the same trace ID.
+
+### 📊 Example Trace Visualization
+
+![Zipkin Trace](images/feign-tracing.png)
+
+The trace will display the complete call chain:
+
+```
+API Gateway → Review Service → Book Service
+```
+
+### 🔌 gRPC Tracing (Order → Book Service)
+
+#### 🖥️ Server Side Configuration (Book Service)
+
+The Book Service requires minimal configuration. Micrometer auto-configuration automatically registers `ObservationGrpcServerInterceptor` at startup.
+
+Create an `ObservabilityConfiguration` class:
+
+```java
+@Configuration
+public class ObservabilityConfiguration {
+    @Bean
+    SecurityObservationSettings noSpringSecurityObservations() {
+        return SecurityObservationSettings.noObservations();
+    }
+
+    /**
+     * Optional: explicit gRPC server tracing/observation interceptor. Micrometer (via auto-configuration) already registers a global
+     * ObservationGrpcServerInterceptor
+     */
+//    @Bean
+//    @GrpcGlobalServerInterceptor
+//    ObservationGrpcServerInterceptor observationGrpcServerInterceptor(ObservationRegistry observationRegistry) {
+//        return new ObservationGrpcServerInterceptor(observationRegistry);
+//    }
+}
+```
+
+Manual registration of ObservationGrpcServerInterceptor will create duplicate spans. The auto-configured interceptor handles all server-side tracing requirements.
+
+#### 💻 Client Side Configuration (Order Service)
+
+Update your `BookServiceGrpcClient` to include the observation interceptor:
+
+```java
+@Service
+public class BookServiceGrpcClient {
+    private static final Logger log = LoggerFactory.getLogger(BookServiceGrpcClient.class);
+    private final BookServiceGrpc.BookServiceBlockingStub blockingStub;
+
+    public BookServiceGrpcClient(
+        @Value("${book.service.address:localhost}") String serverAddress,
+        @Value("${book.service.grpc.port:9090}") int serverPort,
+        ObservationRegistry observationRegistry
+    ) {
+        log.info("Connecting to Book Service GRPC at {}:{}", serverAddress, serverPort);
+
+        ManagedChannel channel = NettyChannelBuilder
+            .forAddress(serverAddress, serverPort)
+            .usePlaintext()
+            .intercept(new ObservationGrpcClientInterceptor(observationRegistry))
+            .build();
+
+        blockingStub = BookServiceGrpc.newBlockingStub(channel);
+    }
+
+    public ReduceAvailableCopiesResponse reduceAvailableCopies(String bookIsbn, int quantity) {
+        ReduceAvailableCopiesRequest request = ReduceAvailableCopiesRequest.newBuilder()
+            .setBookIsbn(bookIsbn)
+            .setQuantity(quantity)
+            .build();
+
+        return blockingStub.reduceAvailableCopies(request);
+    }
+}
+```
+
+The `ObservationGrpcClientInterceptor` performs three functions:
+
+- Creates a client span for each gRPC call
+- Propagates trace context through gRPC metadata
+- Links the gRPC span to the parent HTTP span
+
+The `ObservationGrpcServerInterceptor` handles the server side:
+
+- Extracts trace context from incoming gRPC metadata
+- Creates a server span as a child of the client span
+- Maintains the same trace ID across service boundaries
+
+#### 🧪 Testing the Implementation
+
+Start your services and navigate to the Zipkin UI at `http://localhost:9411`. Make a few requests through your application to generate trace data.
+
+In the Zipkin UI, click "Run Query" to view recent traces. You should see a complete trace showing the request flow across all services with the same trace ID.
+
+### 📊 Example Trace Visualization
+
+![Zipkin Trace](images/grpc-tracing.png)
+
+The trace will display the complete call chain:
+
+```
+API Gateway → Order Service (HTTP) → Book Service (gRPC)
 ```
 
 ## Test Book APIs via Postman
