@@ -21,6 +21,8 @@ logging:
     com.prunny.reviewservice: DEBUG
   pattern:
     level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+  file:
+    name: C:/Users/user/IdeaProjects/Prunny/Onboarding Learning Projects/Bookstore-microservice/observability/host-logs/review-service.log
 
 eureka:
   instance:
@@ -36,6 +38,19 @@ management:
   tracing:
     sampling:
       probability: 1.0 # report 100% of traces
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4320/v1/traces
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+    endpoint:
+      health:
+        probes:
+          enabled: true
 
 spring:
   devtools:

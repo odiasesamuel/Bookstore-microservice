@@ -1,0 +1,64 @@
+version: "3.9"
+
+name: observability
+services:
+  grafana:
+    image: grafana/grafana:latest
+    ports: ["3000:3000"]
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on: [prometheus, loki, tempo]
+    networks: [obs]
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports: ["9090:9090"]
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks: [obs]
+
+  loki:
+    image: grafana/loki:latest
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    ports: ["3100:3100"]
+    volumes:
+      - ./loki/local-config.yaml:/etc/loki/local-config.yaml
+    networks: [obs]
+
+  promtail:
+    image: grafana/promtail:latest
+    command: ["-config.file=/etc/promtail/config.yml"]
+    volumes:
+      - ./promtail/config.yml:/etc/promtail/config.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./host-logs:/host-logs:ro
+    depends_on: [loki]
+    networks: [obs]
+
+  tempo:
+    image: grafana/tempo:latest
+    command: ["-config.file=/etc/tempo/tempo.yml"]
+    ports:
+      - "3200:3200"   # Tempo query
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+    volumes:
+      - ./tempo/tempo.yml:/etc/tempo/tempo.yml
+      - ./tempo-data:/tmp/tempo
+    networks: [obs]
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector/config.yml"]
+    ports:
+      - "4319:4317"   # host -> collector (optional)
+      - "4320:4318"   # host -> collector (optional)
+    volumes:
+      - ./otel-collector/config.yml:/etc/otel-collector/config.yml
+    depends_on: [tempo]
+    networks: [obs]
+
+networks:
+  obs:
+    driver: bridge

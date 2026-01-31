@@ -260,4 +260,4 @@ jhipster:
 
 grpc:
   server:
-    port: 9090
+    port: 9000

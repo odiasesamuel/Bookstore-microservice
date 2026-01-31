@@ -1074,5 +1074,23 @@
                 </dependency>
             </dependencies>
         </profile>
+
+      <profile>
+        <!--
+            Profile for tracing requests with Temp.
+        -->
+        <id>grafanaStack</id>
+        <dependencies>
+          <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+          </dependency>
+
+          <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
+          </dependency>
+        </dependencies>
+      </profile>
     </profiles>
 </project>

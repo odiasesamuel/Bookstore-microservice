@@ -21,7 +21,7 @@ public class BookServiceGrpcClient {
 
     public BookServiceGrpcClient(
         @Value("${book.service.address:localhost}") String serverAddress,
-        @Value("${book.service.grpc.port:9090}") int serverPort,
+        @Value("${book.service.grpc.port:9000}") int serverPort,
         ObservationRegistry observationRegistry
     ) {
         log.info("Connecting to Billing Service GRPC service at {}:{}", serverAddress, serverPort);
