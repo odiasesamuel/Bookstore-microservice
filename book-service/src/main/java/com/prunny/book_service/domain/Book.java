@@ -46,6 +46,10 @@ public class Book implements Serializable {
     @Column(name = "available_copies", nullable = false)
     private Integer availableCopies;
 
+    @NotNull
+    @Column(name = "sales_count")
+    private Integer salesCount = 0;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -137,6 +141,19 @@ public class Book implements Serializable {
 
     public void setAvailableCopies(Integer availableCopies) {
         this.availableCopies = availableCopies;
+    }
+
+    public Integer getSalesCount() {
+        return this.salesCount;
+    }
+
+    public Book salesCount(Integer salesCount) {
+        this.setSalesCount(Book.this.salesCount);
+        return this;
+    }
+
+    public void setSalesCount(Integer salesCount) {
+        this.salesCount = salesCount;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

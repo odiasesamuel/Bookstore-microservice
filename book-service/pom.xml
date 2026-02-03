@@ -331,10 +331,24 @@
         <artifactId>grpc-spring-boot-starter</artifactId>
         <version>3.1.0.RELEASE</version>
       </dependency>
+
+      <!-- Protobuf - For message serialization used by both grpc and kafka -->
       <dependency>
         <groupId>com.google.protobuf</groupId>
         <artifactId>protobuf-java</artifactId>
-        <version>4.29.1</version>
+        <version>4.31.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework.kafka</groupId>
+        <artifactId>spring-kafka</artifactId>
+      </dependency>
+
+      <!-- Confluent Protobuf Serializer - Converts Protobuf to bytes for Kafka -->
+      <dependency>
+        <groupId>io.confluent</groupId>
+        <artifactId>kafka-protobuf-serializer</artifactId>
+        <version>8.1.1</version>
       </dependency>
 
     </dependencies>
@@ -427,9 +441,9 @@
             <artifactId>protobuf-maven-plugin</artifactId>
             <version>0.6.1</version>
             <configuration>
-              <protocArtifact>com.google.protobuf:protoc:3.25.5:exe:${os.detected.classifier}</protocArtifact>
+              <protocArtifact>com.google.protobuf:protoc:4.31.1:exe:${os.detected.classifier}</protocArtifact>
               <pluginId>grpc-java</pluginId>
-              <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.68.1:exe:${os.detected.classifier}</pluginArtifact>
+              <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.69.0:exe:${os.detected.classifier}</pluginArtifact>
             </configuration>
             <executions>
               <execution>
@@ -889,6 +903,14 @@
             </plugins>
         </pluginManagement>
     </build>
+
+  <!-- Confluent repository - where kafka-protobuf-serializer lives -->
+  <repositories>
+    <repository>
+      <id>confluent</id>
+      <url>https://packages.confluent.io/maven/</url>
+    </repository>
+  </repositories>
 
     <profiles>
         <profile>

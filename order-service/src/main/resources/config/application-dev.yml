@@ -70,6 +70,26 @@ spring:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
     cache: false
+  kafka:
+    bootstrap-servers: localhost:9092  # Where Kafka is running
+    producer:
+      # How to convert your objects to bytes
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer
+
+      # Reliability settings
+      acks: all  # Wait for all replicas to confirm (most reliable)
+      retries: 3  # Retry 3 times if sending fails
+    properties:
+      # Prevents duplicate messages
+      enable.idempotence: true
+      # Where Schema Registry is
+      schema.registry.url: http://localhost:8091
+
+bookstore:
+  kafka:
+    topics:
+      book-ordered: book.order.created
 
 server:
   port: 8082

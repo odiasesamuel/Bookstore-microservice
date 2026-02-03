@@ -2,6 +2,7 @@ package com.prunny.order_service.service;
 
 import book.ReduceAvailableCopiesResponse;
 import com.prunny.order_service.domain.Order;
+import com.prunny.order_service.event.publisher.BookEventPublisher;
 import com.prunny.order_service.grpc.client.BookServiceGrpcClient;
 import com.prunny.order_service.repository.OrderRepository;
 import com.prunny.order_service.service.dto.OrderDTO;
@@ -32,10 +33,13 @@ public class OrderService {
 
     private final BookServiceGrpcClient bookServiceGrpcClient;
 
-    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, BookServiceGrpcClient bookServiceGrpcClient) {
+    private final BookEventPublisher bookEventPublisher;
+
+    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, BookServiceGrpcClient bookServiceGrpcClient, BookEventPublisher bookEventPublisher) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.bookServiceGrpcClient = bookServiceGrpcClient;
+        this.bookEventPublisher = bookEventPublisher;
     }
 
     /**
@@ -57,6 +61,13 @@ public class OrderService {
             if (msg.contains("not enough stock")) throw new InsufficientStockException(msg);
             throw new ResourceNotFoundException(bookServiceResponse.getMessage());
         }
+
+        // Make an async request using kafka to book service to increment the sales count
+        bookEventPublisher.publishBookOrderedEvent(
+            order.getId().toString(),
+            order.getBookIsbn(),
+            order.getQuantity()
+        );
 
         return orderMapper.toDto(order);
     }

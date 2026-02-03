@@ -128,4 +128,14 @@ public class BookService {
         LOG.debug("Request to delete Book : {}", id);
         bookRepository.deleteById(id);
     }
+
+    public void incrementSalesCount(String isbn, Integer quantity) {
+        LOG.debug("Incrementing sales count for Book ISBN: {}, Quantity: {}", isbn, quantity);
+        bookRepository.findByIsbn(isbn).ifPresent(book -> {
+            Integer currentSales = book.getSalesCount();
+            book.setSalesCount(currentSales + quantity);
+            bookRepository.save(book);
+            LOG.debug("Updated sales count for Book ISBN: {}, New Available Copies: {}", isbn, book.getAvailableCopies());
+        });
+    }
 }

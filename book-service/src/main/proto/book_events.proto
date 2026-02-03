@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package com.bookstore.events;
+
+option java_package = "com.bookstore.events";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+// This is the message we'll send through Kafka when a book is ordered
+message BookOrderedEvent {
+  string event_id = 1;           // Unique ID to prevent duplicate processing
+  string order_id = 2;           // Which order triggered this
+  string book_isbn = 3;          // Which book was ordered
+  int32 quantity = 4;            // How many copies
+  google.protobuf.Timestamp ordered_at = 5;  // When it happened
+}

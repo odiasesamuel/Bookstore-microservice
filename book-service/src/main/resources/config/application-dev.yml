@@ -72,6 +72,35 @@ spring:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
     cache: false
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      # Consumer Group - like a team name
+      # Multiple instances share the work
+      group-id: book-service-sales-updater
+
+      # How to deserialize messages
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer
+
+      # If this consumer has never run before, where to start?
+      auto-offset-reset: earliest  # Read from the beginning
+
+      # Don't auto-commit offsets - we'll do it manually
+      enable-auto-commit: false
+    properties:
+      # Tell deserializer what type to create
+      specific.protobuf.value.type: com.bookstore.events.BookOrderedEvent
+      schema.registry.url: http://localhost:8091
+
+    listener:
+      # Manual acknowledgment for reliability
+      ack-mode: manual
+
+bookstore:
+  kafka:
+    topics:
+      book-ordered: book.order.created
 
 server:
   port: 8080

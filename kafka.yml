@@ -1,0 +1,76 @@
+# NOTE:
+# - Confluent Platform 8.x does NOT ship ZooKeeper, so we run Kafka in KRaft mode.
+# - That means: NO zookeeper service at all. Kafka handles its own metadata via the controller quorum.
+
+name: kafka-setup
+
+services:
+  # Kafka - The message broker (now also contains the "brain" in KRaft mode)
+  kafka:
+    image: confluentinc/cp-kafka:8.1.1
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"  # External port (your app on your laptop connects here)
+    environment:
+      # KRaft mode (Kafka runs both broker + controller roles)
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
+
+      # Two listeners: internal (containers) and external (your machine)
+      # - PLAINTEXT is what other containers use (schema registry, kafka-ui)
+      # - PLAINTEXT_HOST is what your local Spring app uses (localhost:9092)
+      # - CONTROLLER is the internal controller quorum channel for KRaft
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+
+      # Single node dev settings (so Kafka doesn't complain about replication factors)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+      # KRaft storage
+      # CLUSTER_ID: required for KRaft. This is fine for local dev.
+      # If you want a fresh one: `docker run --rm confluentinc/cp-kafka:8.1.1 kafka-storage random-uuid`
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"   # any 22 char base64-ish string works for local dev
+      KAFKA_LOG_DIRS: "/var/lib/kafka/data"
+
+  # Schema Registry - Stores and validates Protobuf schemas
+  schema-registry:
+    image: confluentinc/cp-schema-registry:8.1.1
+    hostname: schema-registry
+    container_name: schema-registry
+    depends_on:
+      - kafka
+    ports:
+      - "8091:8081"   # changed from 8081 to 8091 (so you can hit it at http://localhost:8091)
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: "http://0.0.0.0:8081"
+
+      # IMPORTANT:
+      # - Schema Registry must talk to Kafka over the INTERNAL listener (kafka:29092),
+      #   not localhost and not host-mapped 9092.
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:29092"
+
+  # Kafka UI - Web interface to see messages (very helpful for learning!)
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka
+      - schema-registry
+    ports:
+      - "8090:8080"   # changed from 8080 to 8090 (so you can open http://localhost:8090)
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+
+      # IMPORTANT:
+      # - Kafka UI is also a container, so it should use kafka:29092 (internal),
+      #   not kafka:9092 (host listener) and not localhost.
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka:29092"
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: "http://schema-registry:8081"
